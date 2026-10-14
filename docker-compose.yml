@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: shieldtrack
+      POSTGRES_PASSWORD: shieldtrack
+      POSTGRES_DB: shieldtrack
+    ports:
+      - "5432:5432"
+    volumes:
+      - shieldtrack_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shieldtrack -d shieldtrack"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  shieldtrack_pg:

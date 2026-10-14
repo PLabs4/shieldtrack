@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // Local default is SQLite. For production Postgres, set provider = "postgresql"
+  // and DATABASE_URL to your Postgres connection string, then re-run prisma db push.
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Protocol {
+  tornado
+  railgun
+  zcash
+}
+
+enum Direction {
+  in
+  out
+}
+
+enum AmountTier {
+  normal
+  large
+  ultra
+}
+
+model GateEvent {
+  id              String     @id @default(cuid())
+  protocol        Protocol
+  direction       Direction
+  chainId         Int
+  chainLabel      String
+  assetSymbol     String
+  assetAddress    String?
+  amountRaw       String
+  amountFormatted Decimal
+  amountUsd       Decimal?
+  tier            AmountTier @default(normal)
+  fromAddress     String?
+  toAddress       String?
+  counterparty    String?
+  txHash          String
+  logIndex        Int        @default(0)
+  blockNumber     BigInt?
+  blockTime       DateTime
+  poolLabel       String?
+  relayer         String?
+  feeRaw          String?
+  meta            Json?
+  createdAt       DateTime   @default(now())
+
+  @@unique([protocol, chainId, txHash, logIndex, direction])
+  @@index([blockTime(sort: Desc)])
+  @@index([protocol, blockTime(sort: Desc)])
+  @@index([tier, blockTime(sort: Desc)])
+  @@index([direction, blockTime(sort: Desc)])
+}
+
+model IndexerCursor {
+  id          String   @id
+  protocol    Protocol
+  chainId     Int
+  cursorKey   String
+  blockNumber BigInt
+  updatedAt   DateTime @updatedAt
+
+  @@unique([protocol, chainId, cursorKey])
+}
+
+model AppMeta {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
