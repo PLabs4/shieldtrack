@@ -68,8 +68,8 @@ function maxUsd(
 
 function domainY(vals: number[]): { min: number; max: number } {
   if (!vals.length) return { min: 0, max: 1 };
-  let min = Math.min(...vals);
-  let max = Math.max(...vals);
+  const min = Math.min(...vals);
+  const max = Math.max(...vals);
   if (min === max) {
     const pad = Math.max(min * 0.35, 1);
     return { min: Math.max(0, min - pad), max: max + pad };
@@ -344,14 +344,16 @@ export function FlowTickChart({ events, prices }: Props) {
     };
   }, [events, prices, nowSec, size, mounted]);
 
+  const lastInId = model?.lastInId ?? null;
+  const lastOutId = model?.lastOutId ?? null;
+
   useEffect(() => {
-    if (!model) return;
     const prev = prevRef.current;
     const next = {
-      in: Boolean(model.lastInId && model.lastInId !== prev.in),
-      out: Boolean(model.lastOutId && model.lastOutId !== prev.out),
+      in: Boolean(lastInId && lastInId !== prev.in),
+      out: Boolean(lastOutId && lastOutId !== prev.out),
     };
-    prevRef.current = { in: model.lastInId, out: model.lastOutId };
+    prevRef.current = { in: lastInId, out: lastOutId };
     if (!primedRef.current) {
       primedRef.current = true;
       return;
@@ -360,7 +362,7 @@ export function FlowTickChart({ events, prices }: Props) {
     setPulse(next);
     const t = window.setTimeout(() => setPulse({ in: false, out: false }), 900);
     return () => window.clearTimeout(t);
-  }, [model?.lastInId, model?.lastOutId]);
+  }, [lastInId, lastOutId]);
 
   if (!model) {
     return (

@@ -96,8 +96,8 @@ async function fetchOracleQuotes(
     }),
   ]);
 
-  let priceMap: Record<string, number> = {};
-  let changeMap: Record<string, number> = {};
+  const priceMap: Record<string, number> = {};
+  const changeMap: Record<string, number> = {};
 
   if (priceRes.status === "fulfilled" && priceRes.value.ok) {
     try {
