@@ -2,7 +2,9 @@ import { fetchZcashGateEvents } from "@/lib/protocols/zcash";
 import { persistGateEvents, setCursor } from "@/lib/indexer/store";
 
 export async function indexZcash(): Promise<number> {
-  const events = await fetchZcashGateEvents(80);
+  // CipherScan lists many fully_shielded rows; pull a wider page so public
+  // shield/deshield edges still fill after filtering.
+  const events = await fetchZcashGateEvents(200);
   const inserted = await persistGateEvents(events);
 
   // Cursor for Zcash is wall-clock based; store latest seen unix seconds.

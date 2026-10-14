@@ -19,8 +19,12 @@ type CipherScanListResponse = {
 
 function directionFromFlow(flowType: string | undefined): "in" | "out" | null {
   const t = (flowType ?? "").toLowerCase();
+  // Skip fully-shielded internals (no public amount / transparent edge).
+  if (t === "fully_shielded" || t.includes("fully_shielded")) return null;
   if (t.includes("deshield") || t.includes("unshield")) return "out";
-  if (t.includes("shield")) return "in";
+  if (t === "shield" || t.includes("shielding") || t.startsWith("shield")) {
+    return "in";
+  }
   return null;
 }
 
@@ -74,6 +78,7 @@ export async function fetchZcashGateEvents(
   const url = `${base}/shielded/list?limit=${limit}`;
   const res = await fetch(url, {
     headers: { accept: "application/json" },
+    redirect: "follow",
     signal: AbortSignal.timeout(20_000),
   });
 
@@ -81,7 +86,15 @@ export async function fetchZcashGateEvents(
     throw new Error(`Zcash API ${res.status} for ${url}`);
   }
 
-  const payload = (await res.json()) as CipherScanListResponse;
+  const payload = (await res.json()) as CipherScanListResponse & {
+    redirect?: string;
+  };
+  // Old cipherscan.app host returns a JSON redirect stub instead of flows.
+  if (!payload.flows && typeof payload.redirect === "string") {
+    throw new Error(
+      `Zcash API returned redirect stub → ${payload.redirect}. Set ZCASH_API_BASE=https://api.mainnet.cipherscan.app/api`,
+    );
+  }
   const flows = payload.flows ?? [];
   return flows
     .map(normalizeFlow)

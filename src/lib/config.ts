@@ -17,7 +17,9 @@ export const config = {
   ultraUsd: num(process.env.ULTRA_USD, 500_000),
   /** History panel only shows transfers at/above this USD notional. */
   historyMinUsd: num(process.env.HISTORY_MIN_USD, 100_000),
-  zcashApiBase: process.env.ZCASH_API_BASE ?? "https://cipherscan.app/api",
+  // cipherscan.app/api is a stub that returns {"redirect":"…"}; use the live API.
+  zcashApiBase:
+    process.env.ZCASH_API_BASE ?? "https://api.mainnet.cipherscan.app/api",
   zcashPollMs: num(process.env.ZCASH_POLL_MS, 15_000),
   coingeckoBase:
     process.env.COINGECKO_API_BASE ?? "https://api.coingecko.com/api/v3",
